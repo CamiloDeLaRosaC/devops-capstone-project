@@ -1,68 +1,92 @@
----
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: echo
+  name: capstone-cleanup
 spec:
-  description: This task will echo the message.
-  params:
-    - name: message
-      description: The message to echo
-      type: string
-  steps:
-    - name: echo-message
-      image: alpine:3
-      command: [/bin/echo]
-      args: ["$(params.message)"]
----
-apiVersion: tekton.dev/v1beta1
-kind: Task
-metadata:
-  name: cleanup
-spec:
-  description: This task will clean up a workspace by deleting all of the files.
   workspaces:
     - name: source
   steps:
-    - name: remove
+    - name: clean
       image: alpine:3
-      env:
-        - name: WORKSPACE_SOURCE_PATH
-          value: $(workspaces.source.path)
       workingDir: $(workspaces.source.path)
-      securityContext:
-        runAsNonRoot: false
-        runAsUser: 0
       script: |
-        #!/usr/bin/env sh
+        #!/bin/sh
         set -eu
-        echo "Removing all files from ${WORKSPACE_SOURCE_PATH} ..."
-        if [ -d "${WORKSPACE_SOURCE_PATH}" ] ; then
-          rm -rf "${WORKSPACE_SOURCE_PATH:?}"/*
-          rm -rf "${WORKSPACE_SOURCE_PATH}"/.[!.]*
-          rm -rf "${WORKSPACE_SOURCE_PATH}"/..?*
-        fi
+        find . -mindepth 1 -maxdepth 1 -exec rm -rf {} +
 ---
 apiVersion: tekton.dev/v1beta1
 kind: Task
 metadata:
-  name: nose
+  name: capstone-flake8
 spec:
-  description: This task runs nosetests on the application source code.
   workspaces:
     - name: source
-  params:
-    - name: args
-      type: string
-      default: "-vv --with-spec --spec-color --with-coverage --cover-package=service"
   steps:
-    - name: nosetests
+    - name: lint
       image: python:3.9-slim
       workingDir: $(workspaces.source.path)
       script: |
-        #!/usr/bin/env bash
-        set -e
-        pip install --upgrade pip wheel
-        pip install -r requirements.txt
-        pip install nose coverage pinocchio factory-boy Flask-Talisman Flask-Cors
-        nosetests $(params.args)
+        #!/bin/sh
+        set -eu
+        python -m venv /tmp/lint-env
+        /tmp/lint-env/bin/pip install --no-cache-dir flake8==4.0.1
+        /tmp/lint-env/bin/flake8 . --count --max-complexity=10 --max-line-length=127 --statistics
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: capstone-nosetests
+spec:
+  workspaces:
+    - name: source
+  steps:
+    - name: tests
+      image: python:3.9-slim
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: DATABASE_URI
+          value: sqlite:////tmp/accounts-tests.db
+        - name: PYTHONDONTWRITEBYTECODE
+          value: '1'
+      script: |
+        #!/bin/sh
+        set -eu
+        python -m venv /tmp/test-env
+        /tmp/test-env/bin/pip install --no-cache-dir -r requirements.txt
+        printf '[nosetests]\nverbosity=2\n' > /tmp/nose.cfg
+        /tmp/test-env/bin/nosetests --config=/tmp/nose.cfg -v --with-coverage --cover-package=service
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: capstone-build
+spec:
+  workspaces:
+    - name: source
+  steps:
+    - name: build-image
+      image: quay.io/openshift/origin-cli:4.14
+      workingDir: $(workspaces.source.path)
+      script: |
+        #!/bin/sh
+        set -eu
+        oc start-build accounts --from-dir=. --follow
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: capstone-deploy
+spec:
+  workspaces:
+    - name: source
+  steps:
+    - name: deploy-accounts
+      image: quay.io/openshift/origin-cli:4.14
+      workingDir: $(workspaces.source.path)
+      script: |
+        #!/bin/sh
+        set -eu
+        oc apply -f deploy/deployment.yaml -f deploy/service.yaml
+        oc rollout restart deployment/accounts
+        oc rollout status deployment/accounts --timeout=180s
+        oc get deployment,pods,replicasets,services -l app=accounts
