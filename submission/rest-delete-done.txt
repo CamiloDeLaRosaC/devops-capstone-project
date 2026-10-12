@@ -1,0 +1,31 @@
+$ curl -s -i -X DELETE -H "X-Forwarded-Proto: https" http://127.0.0.1:8080/accounts/2
+HTTP/1.1 204 NO CONTENT
+Server: gunicorn
+Date: Mon, 12 Oct 2026 01:48:53 GMT
+Connection: close
+Content-Type: text/html; charset=utf-8
+Access-Control-Allow-Origin: *
+Permissions-Policy: browsing-topics=()
+X-Frame-Options: SAMEORIGIN
+X-Content-Type-Options: nosniff
+Content-Security-Policy: default-src 'self'; object-src 'none'
+Strict-Transport-Security: max-age=31556926; includeSubDomains
+Referrer-Policy: strict-origin-when-cross-origin
+
+
+$ curl -s -i -H "X-Forwarded-Proto: https" http://127.0.0.1:8080/accounts/2
+HTTP/1.1 404 NOT FOUND
+Server: gunicorn
+Date: Mon, 12 Oct 2026 01:48:53 GMT
+Connection: close
+Content-Type: application/json
+Content-Length: 102
+Access-Control-Allow-Origin: *
+Permissions-Policy: browsing-topics=()
+X-Frame-Options: SAMEORIGIN
+X-Content-Type-Options: nosniff
+Content-Security-Policy: default-src 'self'; object-src 'none'
+Strict-Transport-Security: max-age=31556926; includeSubDomains
+Referrer-Policy: strict-origin-when-cross-origin
+
+{"error":"Not Found","message":"404 Not Found: Account with id [2] could not be found.","status":404}
