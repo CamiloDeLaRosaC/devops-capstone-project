@@ -1,15 +1,15 @@
-✓ main CI build · 38194657012
-Triggered via push
-
-✓ build in 30s (ID 114634564189)
-  ✓ Set up job
-  ✓ Checkout code
-  ✓ Set up Python 3.9
-  ✓ Install dependencies
-  ✓ Lint with flake8
-  ✓ Run unit tests with nosetests
-  ✓ Post Set up Python 3.9
-  ✓ Post Checkout code
-  ✓ Complete job
-
-View this run on GitHub: https://github.com/CamiloDeLaRosaC/devops-capstone-project/actions/runs/38194657012
+CI build - main - run 38198834600
+Conclusion: success
+build (job 114647447461)
+  PASS: Set up job
+  PASS: Initialize containers
+  PASS: Checkout code
+  PASS: Set up Python 3.9
+  PASS: Install dependencies
+  PASS: Lint with flake8
+  PASS: Run unit tests with nosetests
+  PASS: Post Set up Python 3.9
+  PASS: Post Checkout code
+  PASS: Stop containers
+  PASS: Complete job
+View this run on GitHub: https://github.com/CamiloDeLaRosaC/devops-capstone-project/actions/runs/38198834600
