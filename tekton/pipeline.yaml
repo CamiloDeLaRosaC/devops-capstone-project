@@ -1,29 +1,26 @@
----
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
-metadata:  
-  name: cd-pipeline
+metadata:
+  name: capstone-cd-pipeline
 spec:
   workspaces:
     - name: pipeline-workspace
   params:
     - name: repo-url
+      type: string
+      default: https://github.com/CamiloDeLaRosaC/devops-capstone-project.git
     - name: branch
+      type: string
       default: main
-    - name: build-image
-      default: "accounts:1.0"
   tasks:
-    - name: init
+    - name: cleanup
+      taskRef:
+        name: capstone-cleanup
       workspaces:
         - name: source
-          workspace: pipeline-workspace          
-      taskRef:
-        name: cleanup
-
+          workspace: pipeline-workspace
     - name: clone
-      workspaces:
-        - name: output
-          workspace: pipeline-workspace          
+      runAfter: [cleanup]
       taskRef:
         name: git-clone
       params:
@@ -31,59 +28,34 @@ spec:
           value: $(params.repo-url)
         - name: revision
           value: $(params.branch)
-      runAfter:
-        - init
-
+      workspaces:
+        - name: output
+          workspace: pipeline-workspace
     - name: lint
+      runAfter: [clone]
+      taskRef:
+        name: capstone-flake8
       workspaces:
         - name: source
           workspace: pipeline-workspace
-      taskRef:
-        name: flake8
-      params:
-        - name: image
-          value: "python:3.9-slim"
-        - name: args
-          value: ["--count", "--max-complexity=10", "--max-line-length=127", "--statistics"]
-      runAfter:
-        - clone
-
     - name: tests
+      runAfter: [lint]
+      taskRef:
+        name: capstone-nosetests
       workspaces:
         - name: source
           workspace: pipeline-workspace
-      taskRef:
-        name: nose
-      params:
-        - name: args
-          value: "-vv --with-spec --spec-color --with-coverage --cover-package=service"
-      runAfter:
-        - lint
-
     - name: build
+      runAfter: [tests]
+      taskRef:
+        name: capstone-build
       workspaces:
         - name: source
           workspace: pipeline-workspace
-      taskRef:
-        name: buildah
-      params:
-        - name: IMAGE
-          value: $(params.build-image)
-        - name: TLSVERIFY
-          value: "false"
-      runAfter:
-        - tests
-
     - name: deploy
+      runAfter: [build]
+      taskRef:
+        name: capstone-deploy
       workspaces:
         - name: source
           workspace: pipeline-workspace
-      taskRef:
-        name: openshift-client
-      params:
-        - name: SCRIPT
-          value: |
-            oc apply -f deploy/deployment.yaml
-            oc apply -f deploy/service.yaml
-      runAfter:
-        - build
