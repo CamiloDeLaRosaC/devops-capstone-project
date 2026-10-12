@@ -22,14 +22,14 @@ spec:
     - name: clone
       runAfter: [cleanup]
       taskRef:
-        name: git-clone
+        name: capstone-clone
       params:
         - name: url
           value: $(params.repo-url)
         - name: revision
           value: $(params.branch)
       workspaces:
-        - name: output
+        - name: source
           workspace: pipeline-workspace
     - name: lint
       runAfter: [clone]
