@@ -1,0 +1,89 @@
+[init : remove] Removing all files from /workspace/source ...
+
+[clone : clone] + '[' false '=' true ']'
+[clone : clone] + '[' false '=' true ']'
+[clone : clone] + '[' false '=' true ']'
+[clone : clone] + CHECKOUT_DIR=/workspace/output/
+[clone : clone] + '[' true '=' true ']'
+[clone : clone] + cleandir /workspace/output/
+[clone : clone] + test -d /workspace/output/
+[clone : clone] + rm -rf '/workspace/output//*'
+[clone : clone] + rm -rf '/workspace/output//.*'
+[clone : clone] + test -d /workspace/output/
+[clone : clone] + test -d /workspace/output/.git
+[clone : clone] + test -d /workspace/output/.git
+[clone : clone] + git init /workspace/output/
+[clone : clone] + cd /workspace/output/
+[clone : clone] + git remote add origin https://github.com/CamiloDeLaRosaC/devops-capstone-project.git
+[clone : clone] + git fetch --depth=1 origin main
+[clone : clone] + git checkout main
+[clone : clone] Successfully cloned https://github.com/CamiloDeLaRosaC/devops-capstone-project.git @ main
+
+[lint : flake8] 0
+[lint : flake8] 0
+
+[tests : nosetests] nose.config: INFO: Ignoring files matching ['^\\.', '^_', '^setup\\.py$']
+[tests : nosetests] nose.plugins.cover: INFO: Coverage report will include only packages: ['service']
+[tests : nosetests] Test Flask CLI Commands
+[tests : nosetests] - It should call the db-create command
+[tests : nosetests] Test Cases for Account Model
+[tests : nosetests] - It should Create an account and add it to the database
+[tests : nosetests] - It should Create an Account and assert that it exists
+[tests : nosetests] - It should Delete an account from the database
+[tests : nosetests] - It should Deserialize an account
+[tests : nosetests] - It should not Deserialize an account with a KeyError
+[tests : nosetests] - It should not Deserialize an account with a TypeError
+[tests : nosetests] - It should Deserialize an account without date_joined
+[tests : nosetests] - It should Find an Account by name
+[tests : nosetests] - It should List all Accounts in the database
+[tests : nosetests] - It should Read an account
+[tests : nosetests] - It should format Account as string
+[tests : nosetests] - It should Serialize an account
+[tests : nosetests] - It should Update an account
+[tests : nosetests] Account Service Tests
+[tests : nosetests] - It should not Create an Account when sending the wrong data
+[tests : nosetests] - It should return a CORS header
+[tests : nosetests] - It should Create a new Account
+[tests : nosetests] - It should Delete an Account
+[tests : nosetests] - It should Get a list of Accounts
+[tests : nosetests] - It should not Read an Account that is not found
+[tests : nosetests] - It should be healthy
+[tests : nosetests] - It should get 200_OK from the Home Page
+[tests : nosetests] - It should not allow an illegal method call
+[tests : nosetests] - It should Read a single Account
+[tests : nosetests] - It should return security headers
+[tests : nosetests] - It should not Create an Account when sending the wrong media type
+[tests : nosetests] - It should Update an existing Account
+[tests : nosetests] - It should not Update an Account that is not found
+[tests : nosetests] Name                               Stmts   Miss  Cover   Missing
+[tests : nosetests] ----------------------------------------------------------------
+[tests : nosetests] service/__init__.py                   22      3    86%   37-40
+[tests : nosetests] service/common/__init__.py             0      0   100%
+[tests : nosetests] service/common/cli_commands.py         7      0   100%
+[tests : nosetests] service/common/error_handlers.py      32      3    91%   76-78
+[tests : nosetests] service/common/log_handlers.py        10      1    90%   21
+[tests : nosetests] service/common/status.py              46      0   100%
+[tests : nosetests] service/config.py                     11      5    55%   12-16
+[tests : nosetests] service/models.py                     69      1    99%   32
+[tests : nosetests] service/routes.py                     57      0   100%
+[tests : nosetests] ----------------------------------------------------------------
+[tests : nosetests] TOTAL                                254     13    95%
+[tests : nosetests] ----------------------------------------------------------------------
+[tests : nosetests] Ran 28 tests in 0.312s
+[tests : nosetests] 
+[tests : nosetests] OK
+
+[build : build] STEP 1: FROM python:3.9-slim
+[build : build] STEP 2: WORKDIR /app
+[build : build] STEP 3: COPY requirements.txt .
+[build : build] STEP 4: RUN pip install --no-cache-dir -r requirements.txt
+[build : build] STEP 5: COPY service/ ./service/
+[build : build] STEP 6: RUN useradd --uid 1000 theia && chown -R theia /app
+[build : build] STEP 7: USER theia
+[build : build] STEP 8: EXPOSE 8080
+[build : build] STEP 9: CMD ["gunicorn", "--bind=0.0.0.0:8080", "--log-level=info", "service:app"]
+[build : build] STEP 10: COMMIT accounts:1.0
+[build : build] Successfully tagged localhost:32000/accounts:1.0
+
+[deploy : deploy] deployment.apps/accounts configured
+[deploy : deploy] service/accounts configured
