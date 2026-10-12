@@ -16,12 +16,12 @@ spec:
     spec:
       containers:
       - name: accounts
-        image: accounts:1.0
-        imagePullPolicy: IfNotPresent
+        image: image-registry.openshift-image-registry.svc:5000/sn-labs-mildredfiona/accounts:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
         env:
         - name: PORT
           value: "8080"
         - name: DATABASE_URI
-          value: "postgresql://postgres:postgres@postgresql:5432/postgres"
+          value: "postgresql://accounts:accounts@accounts-db:5432/accounts"
