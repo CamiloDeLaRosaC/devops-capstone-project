@@ -208,3 +208,19 @@ class TestAccountService(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         # Check for the CORS header
         self.assertEqual(response.headers.get("Access-Control-Allow-Origin"), "*")
+
+    def test_cors_preflight(self):
+        """It should allow CORS preflight requests for the Accounts service"""
+        response = self.client.options(
+            BASE_URL,
+            headers={
+                "Origin": "https://example.com",
+                "Access-Control-Request-Method": "POST",
+                "Access-Control-Request-Headers": "Content-Type",
+            },
+            environ_overrides=HTTPS_ENV,
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.headers.get("Access-Control-Allow-Origin"), "https://example.com")
+        self.assertIn("POST", response.headers.get("Access-Control-Allow-Methods", ""))
+        self.assertIn("Content-Type", response.headers.get("Access-Control-Allow-Headers", ""))
